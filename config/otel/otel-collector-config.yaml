@@ -3,13 +3,6 @@ receivers:
     protocols:
       grpc:
       http:
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: 'fastpi-service-sync'
-          scrape_interval: 15s
-          static_configs:
-            - targets: ['sync_api:8000']
 
 processors:
   batch:
@@ -19,8 +12,6 @@ exporters:
     endpoint: jaeger:4317
     tls:
       insecure: true
-  prometheus:
-    endpoint: "0.0.0.0:8889"
 
 service:
   pipelines:
@@ -28,7 +19,3 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [otlp/jaeger]
-    metrics:
-      receivers: [prometheus]
-      processors: [batch]
-      exporters: [prometheus]

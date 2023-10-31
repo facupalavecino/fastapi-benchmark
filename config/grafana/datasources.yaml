@@ -1,0 +1,37 @@
+# config file version
+apiVersion: 1
+
+# list of datasources that should be deleted from the database
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+
+datasources:
+  - uid: prometheus
+    orgId: 1
+    name: Prometheus
+    type: prometheus
+    typeName: Prometheus
+    access: proxy
+    url: http://prometheus:9090
+    password: ''
+    user: ''
+    database: ''
+    basicAuth: false
+    isDefault: true
+    readOnly: false
+    editable: true
+  - uid: jaeger
+    orgId: 1
+    name: Jaeger
+    type: jaeger
+    typeName: Jaeger
+    access: proxy
+    url: http://jaeger:16686
+    password: ''
+    user: ''
+    database: ''
+    basicAuth: false
+    isDefault: false
+    readOnly: false
+    editable: true

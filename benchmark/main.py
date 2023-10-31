@@ -4,7 +4,7 @@ from importlib.metadata import version
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from prometheus_client import make_asgi_app, Counter, Histogram
+from benchmark.utils import PrometheusMiddleware, metrics
 
 from benchmark.api.endpoints import router
 from benchmark.core.constants import PROJECT_NAME
@@ -40,30 +40,10 @@ async def lifespan(app: FastAPI):  # pylint: disable=redefined-outer-name
     logger.info("Shutting down application...")
 
 
-REQUEST_COUNT = Counter(
-    "request_count", "Number of requests received", ["method", "endpoint", "status"]
-)
-
-REQUEST_LATENCY = Histogram(
-    "request_latency_seconds", "Request latency", ["endpoint"]
-)
-
 app = FastAPI(title=PROJECT_NAME, lifespan=lifespan, version=app_version)
 
-@app.middleware("http")
-async def collect_metrics(request, call_next):
-    path = request.url.path
-    method = request.method
-    endpoint = f"{method} {path}"
-    
-    with REQUEST_LATENCY.labels(endpoint).time():
-        response = await call_next(request)
-    
-    REQUEST_COUNT.labels(method, path, response.status_code).inc()
-    
-    return response
+app.add_middleware(PrometheusMiddleware, app_name="fastapi-service-sync")
 
-metrics_app = make_asgi_app()
-app.mount("/metrics", metrics_app)
+app.add_route("/metrics", metrics)
 
 app.include_router(router)

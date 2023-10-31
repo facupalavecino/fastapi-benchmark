@@ -35,6 +35,10 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     ports:
       - "3000:3000"
+    volumes:
+      - ./config/grafana/:/etc/grafana/provisioning/datasources
+      - ./config/grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./config/grafana/dashboards:/etc/grafana/dashboards
     depends_on:
       - prometheus
       - jaeger
@@ -56,12 +60,12 @@ services:
       - benchmark
 
   sync_api:
-    container_name: fastpi-service-sync
+    container_name: fastapi-service-sync
     build:
       context: .
       dockerfile: Dockerfile
     environment:
-      OTEL_SERVICE_NAME: fastpi-service-sync
+      OTEL_SERVICE_NAME: fastapi-service-sync
       OTEL_TRACES_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: none
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317/
