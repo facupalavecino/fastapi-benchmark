@@ -45,12 +45,10 @@ async def async_endpoint() -> Dict[str, str]:
 def sync_s3_req(request: Request) -> Dict[str, str]:
     """Sleeps for 1 second and returns a response"""
 
-    logger.info("Going to s3")
     s3_client: boto3.client = request.app.state.s3_client
 
-    logger.info("I have the client")
-
     try:
+        logger.info(f"About to fetch {settings.AWS_S3_BUCKET_NAME}/laliga.csv")
         response = s3_client.get_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key="laliga.csv")
     except ClientError as e:
         logger.exception(e)

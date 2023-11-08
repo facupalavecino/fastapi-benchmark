@@ -1,3 +1,4 @@
+import threading
 import time
 from typing import Tuple
 
@@ -46,6 +47,13 @@ REQUESTS_IN_PROGRESS = Gauge(
     documentation="Gauge of requests by method and path currently being processed",
     labelnames=["method", "path", "app_name"],
 )
+
+ACTIVE_THREADS = Gauge(
+    name="fastapi_active_threads",
+    documentation="Number of active threads in the FastAPI application."
+)
+
+
 
 
 class PrometheusMiddleware(BaseHTTPMiddleware):
@@ -110,6 +118,7 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
 
 
 def metrics(request: Request) -> Response:
+    ACTIVE_THREADS.set(threading.active_count())
     return Response(
         generate_latest(REGISTRY), headers={"Content-Type": CONTENT_TYPE_LATEST}
     )

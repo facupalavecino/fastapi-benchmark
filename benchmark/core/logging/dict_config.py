@@ -6,13 +6,13 @@ LOGGING_CONFIG = {
     "formatters": {
         "basic": {
             "format": (
-                '{asctime} | level={levelname} ({filename}, line {lineno}) message="{message}"'  # noqa:E501
+                '{asctime} | level={levelname} [{process}-{thread}] ({filename}, line {lineno}) message="{message}"'  # noqa:E501
             ),
             "style": "{",
         },
         "console_basic": {
             "format": (
-                '{asctime} | level={levelname} ({filename}, line {lineno}) message="{message}"'  # noqa:E501
+                '{asctime} | level={levelname} [{process}-{thread}] ({filename}, line {lineno}) message="{message}"'  # noqa:E501
             ),
             "style": "{",
         },
