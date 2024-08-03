@@ -10,6 +10,7 @@ from typing import Dict
 from fastapi import APIRouter, HTTPException, Request
 from opentelemetry import trace
 
+from benchmark.core import constants
 from benchmark.core.config import settings
 
 
@@ -48,8 +49,8 @@ def sync_s3_req(request: Request) -> Dict[str, str]:
     s3_client: boto3.client = request.app.state.s3_client
 
     try:
-        logger.info(f"About to fetch {settings.AWS_S3_BUCKET_NAME}/laliga.csv")
-        response = s3_client.get_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key="laliga.csv")
+        logger.info(f"About to fetch {settings.AWS_S3_BUCKET_NAME}/{constants.S3_DATA_KEY}")
+        response = s3_client.get_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key=constants.S3_DATA_KEY)
     except ClientError as e:
         logger.exception(e)
     except Exception as e:
@@ -66,7 +67,7 @@ async def async_s3_req(request: Request):
     try:
         async with session.client("s3", endpoint_url=settings.AWS_S3_ENDPOINT_URL) as s3_client:
 
-            s3_object = await s3_client.get_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key="laliga.csv")
+            s3_object = await s3_client.get_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key=constants.S3_DATA_KEY)
     
     except ClientError as e:
         logger.exception(e)

@@ -10,3 +10,5 @@ ROOT_DIR = (Path(CONSTANTS_DIR) / "..").resolve()
 
 LOGS_DIR = (ROOT_DIR / ".." / "logs").resolve()
 """Directory where logs are saved"""
+
+S3_DATA_KEY = "ceres.json"

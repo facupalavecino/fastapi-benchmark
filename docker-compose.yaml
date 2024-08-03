@@ -119,7 +119,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317/
     ports:
       - "8000:8000"
-    command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "benchmark.main:app", "-b", "0.0.0.0:8000", "--reload"]
+    command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "benchmark.main:app", "-w", "4", "-b", "0.0.0.0:8000", "--reload"]
     volumes:
       - ./benchmark:/app/benchmark:rw
       - ./logs:/app/logs:rw
