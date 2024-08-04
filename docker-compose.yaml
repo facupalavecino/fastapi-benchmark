@@ -1,49 +1,6 @@
 version: '3.7'
 
 services:
-
-  # minio:
-  #   image: minio/minio
-  #   expose:
-  #     - "9000"
-  #   ports:
-  #     - "9000:9000"
-  #     - "9001:9001" # MinIO Console is available at http://localhost:9001
-  #   environment:
-  #     MINIO_ROOT_USER: ${MINIO_USER}
-  #     MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
-  #   networks:
-  #     - benchmark
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD",
-  #         "curl",
-  #         "-f",
-  #         "http://localhost:9000/minio/health/live"
-  #       ]
-  #     interval: 1s
-  #     timeout: 10s
-  #     retries: 5
-  #   # Note there is no bucket by default
-  #   command: server /data --console-address ":9001"
-  #   volumes:
-  #     - ./docker/minio/data/:/data
-
-  # minio-create-bucket:
-  #   image: minio/mc
-  #   depends_on:
-  #     minio:
-  #       condition: service_healthy
-  #   entrypoint: >
-  #     bash -c " mc alias set minio http://minio:9000 ${MINIO_USER} ${MINIO_PASSWORD} && if ! mc ls minio | grep --quiet benchmark; then
-  #         mc mb minio/benchmark
-  #     else
-  #         echo 'bucket already exists'
-  #     fi "
-  #   networks:
-  #     - benchmark
-
   prometheus:
     image: prom/prometheus:v2.28.1
     volumes:
@@ -89,7 +46,7 @@ services:
       - benchmark
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.85.0
+    image: otel/opentelemetry-collector-contrib:0.86.0
     container_name: otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
@@ -102,8 +59,8 @@ services:
     networks:
       - benchmark
 
-  sync_api:
-    container_name: fastapi-service-sync
+  storytellers-api:
+    container_name: storytellers-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -113,13 +70,13 @@ services:
       AWS_DEFAULT_REGION: us-east-1
       #AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL}
       AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-}
-      OTEL_SERVICE_NAME: fastapi-service-sync
+      OTEL_SERVICE_NAME: storytellers-api
       OTEL_TRACES_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: none
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317/
     ports:
       - "8000:8000"
-    command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "benchmark.main:app", "-w", "4", "-b", "0.0.0.0:8000", "--reload"]
+    command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "benchmark.main:app", "-b", "0.0.0.0:8000", "--reload"]
     volumes:
       - ./benchmark:/app/benchmark:rw
       - ./logs:/app/logs:rw

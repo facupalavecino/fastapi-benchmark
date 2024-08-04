@@ -50,10 +50,18 @@ REQUESTS_IN_PROGRESS = Gauge(
 
 ACTIVE_THREADS = Gauge(
     name="fastapi_active_threads",
-    documentation="Number of active threads in the FastAPI application."
+    documentation="Number of active threads in the FastAPI application.",
 )
-
-
+TIME_TO_FULL_RESPONSE = Histogram(
+    name="time_to_full_response_seconds",
+    documentation="Time to get the full response",
+    labelnames=["provider", "model"]
+)
+TIME_TO_FIRST_BYTE = Histogram(
+    name="time_to_first_byte_seconds",
+    documentation="Time to first byte for the response",
+    labelnames=["provider", "model"]
+)
 
 
 class PrometheusMiddleware(BaseHTTPMiddleware):

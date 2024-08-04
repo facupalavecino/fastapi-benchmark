@@ -2,6 +2,6 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: 'fastapi-service-sync'
+  - job_name: 'storytellers-api'
     static_configs:
-      - targets: ['sync_api:8000']
+      - targets: ['storytellers-api:8000']

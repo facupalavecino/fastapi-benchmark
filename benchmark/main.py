@@ -1,4 +1,3 @@
-import aioboto3
 import boto3
 import logging
 import logging.config
@@ -46,16 +45,16 @@ async def lifespan(app: FastAPI):  # pylint: disable=redefined-outer-name
             endpoint_url=settings.AWS_S3_ENDPOINT_URL,
         )
 
-        aioboto3_session = aioboto3.Session(
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        )
+        # aioboto3_session = aioboto3.Session(
+        #     aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        #     aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        # )
 
     except Exception as e:
         logger.exception(e)
 
     app.state.s3_client = s3_client
-    app.state.aioboto3_session = aioboto3_session
+    # app.state.aioboto3_session = aioboto3_session
 
     logger.info("Done! App ready to accept requests...")
 
