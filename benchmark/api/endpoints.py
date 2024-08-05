@@ -14,6 +14,7 @@ from benchmark.api.schemas import StoryResponse
 from benchmark.core import constants
 from benchmark.core.config import settings
 from benchmark.llms.bedrock import ClaudeBedrockLlm
+from benchmark.llms.gpt import OpenAILlm
 
 
 logger = logging.getLogger(__name__)
@@ -100,14 +101,32 @@ def bedrock_write_story(topic: str):
     return data
 
 
-async def astreamer(generator):
+@router.post("/gpt-write-story", response_model=StoryResponse)
+def gpt_write_story(topic: str):
+
     try:
-        for i in generator:
-            logger.info(i)
-            yield (i)
-            await asyncio.sleep(.1)
-    except asyncio.CancelledError:        
-        print('cancelled')
+        model = OpenAILlm()
+
+    except Exception as e:
+        logger.exception(e)
+
+    logger.info(topic)
+
+    data = model.get_story(topic=topic)
+
+    data = StoryResponse.model_validate(data)
+
+    return data
+
+
+# async def astreamer(generator):
+#     try:
+#         for i in generator:
+#             logger.info(i)
+#             yield (i)
+#             await asyncio.sleep(.1)
+#     except asyncio.CancelledError:        
+#         print('cancelled')
 
 @router.post("/stream-story")
 def bedrock_stream_story(topic: str):
@@ -121,3 +140,17 @@ def bedrock_stream_story(topic: str):
     logger.info(topic)
 
     return StreamingResponse(model.stream_story(topic=topic), media_type="text/event-stream; charset=utf-8")
+
+@router.post("/gpt-stream-story")
+def gpt_stream_story(topic: str):
+
+    try:
+        model = OpenAILlm()
+
+    except Exception as e:
+        logger.exception(e)
+
+    logger.info(topic)
+
+    return StreamingResponse(model.stream_story(topic=topic), media_type="text/event-stream; charset=utf-8")
+
