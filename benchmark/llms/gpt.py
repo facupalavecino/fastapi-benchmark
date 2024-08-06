@@ -13,7 +13,7 @@ logger = logging.getLogger()
 
 class OpenAILlm(BaseLlm):
 
-    def __init__(self) -> None:
+    def __init__(self, model_id: str) -> None:
         super().__init__()
         self.client = OpenAI()
         self.system_prompt = {
@@ -28,7 +28,7 @@ class OpenAILlm(BaseLlm):
                 }
             ],
         }
-        self.model_id = "gpt-3.5-turbo"
+        self.model_id = model_id
 
     def get_story(self, topic: str) -> Dict[str, Any]:
         max_length = 2000
@@ -55,12 +55,16 @@ class OpenAILlm(BaseLlm):
             raise LlmException() from e
 
         end_time = round((time.perf_counter_ns() / 1e9) - start_time, 3)
-        TIME_TO_FIRST_BYTE.labels(provider="openai", model=self.model_id).observe(
-            end_time
-        )
-        TIME_TO_FULL_RESPONSE.labels(provider="openai", model=self.model_id).observe(
-            end_time
-        )
+        TIME_TO_FIRST_BYTE.labels(
+            provider="openai",
+            model=self.model_id,
+            mode="write",
+        ).observe(end_time)
+        TIME_TO_FULL_RESPONSE.labels(
+            provider="openai",
+            model=self.model_id,
+            mode="write",
+        ).observe(end_time)
 
         story = response.choices[0].message.content
 
@@ -85,7 +89,7 @@ class OpenAILlm(BaseLlm):
                 top_p=1,
                 frequency_penalty=0,
                 presence_penalty=0,
-                stream=True
+                stream=True,
             )
 
         except Exception as e:
@@ -96,12 +100,16 @@ class OpenAILlm(BaseLlm):
             if i == 0:
                 ttfb = round((time.perf_counter_ns() / 1e9) - start_time, 3)
                 TIME_TO_FIRST_BYTE.labels(
-                    provider="openai", model=self.model_id
+                    provider="openai",
+                    model=self.model_id,
+                    mode="streaming",
                 ).observe(ttfb)
             if chunk.choices[0].delta.content is not None:
                 yield chunk.choices[0].delta.content
 
         end_time = round((time.perf_counter_ns() / 1e9) - start_time, 3)
-        TIME_TO_FULL_RESPONSE.labels(provider="openai", model=self.model_id).observe(
-            end_time
-        )
+        TIME_TO_FULL_RESPONSE.labels(
+            provider="openai",
+            model=self.model_id,
+            mode="streaming",
+        ).observe(end_time)

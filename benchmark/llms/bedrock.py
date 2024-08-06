@@ -9,12 +9,12 @@ from benchmark.llms.exceptions import LlmException
 from benchmark.utils import TIME_TO_FIRST_BYTE, TIME_TO_FULL_RESPONSE
 
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class ClaudeBedrockLlm(BaseLlm):
 
-    def __init__(self) -> None:
+    def __init__(self, model_id: str) -> None:
         super().__init__()
         self.client = boto3.client(
             service_name="bedrock-runtime", region_name="us-east-1"
@@ -23,7 +23,7 @@ class ClaudeBedrockLlm(BaseLlm):
             "You are a sci-fi writer born in Argentina. Your goal is to write "
             "a short story in no more than 3 paragraphs about a topic defined by the user"
         )
-        self.model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+        self.model_id = model_id
 
     def get_story(self, topic: str) -> Dict[str, Any]:
 
@@ -70,12 +70,16 @@ class ClaudeBedrockLlm(BaseLlm):
             raise LlmException() from e
 
         end_time = round((time.perf_counter_ns() / 1e9) - start_time, 3)
-        TIME_TO_FIRST_BYTE.labels(provider="bedrock", model=self.model_id).observe(
-            end_time
-        )
-        TIME_TO_FULL_RESPONSE.labels(provider="bedrock", model=self.model_id).observe(
-            end_time
-        )
+        TIME_TO_FIRST_BYTE.labels(
+            provider="bedrock",
+            model=self.model_id,
+            mode="write",
+        ).observe(end_time)
+        TIME_TO_FULL_RESPONSE.labels(
+            provider="bedrock",
+            model=self.model_id,
+            mode="write",
+        ).observe(end_time)
 
         story = response_body["content"][0]["text"]
 
@@ -111,7 +115,9 @@ class ClaudeBedrockLlm(BaseLlm):
                 if i == 0:
                     ttfb = round((time.perf_counter_ns() / 1e9) - start_time, 3)
                     TIME_TO_FIRST_BYTE.labels(
-                        provider="bedrock", model=self.model_id
+                        provider="bedrock",
+                        model=self.model_id,
+                        mode="streaming",
                     ).observe(ttfb)
 
                 chunk = json.loads(event["chunk"]["bytes"])
@@ -123,6 +129,8 @@ class ClaudeBedrockLlm(BaseLlm):
             raise LlmException() from e
 
         end_time = round((time.perf_counter_ns() / 1e9) - start_time, 3)
-        TIME_TO_FULL_RESPONSE.labels(provider="bedrock", model=self.model_id).observe(
-            end_time
-        )
+        TIME_TO_FULL_RESPONSE.labels(
+            provider="bedrock",
+            model=self.model_id,
+            mode="streaming",
+        ).observe(end_time)
