@@ -1,5 +1,4 @@
 import time
-import json
 import logging
 from typing import Any, Dict
 from openai import OpenAI
@@ -12,7 +11,6 @@ logger = logging.getLogger()
 
 
 class OpenAILlm(BaseLlm):
-
     def __init__(self, model_id: str) -> None:
         super().__init__()
         self.client = OpenAI()

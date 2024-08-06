@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class ClaudeBedrockLlm(BaseLlm):
-
     def __init__(self, model_id: str) -> None:
         super().__init__()
         self.client = boto3.client(
@@ -26,7 +25,6 @@ class ClaudeBedrockLlm(BaseLlm):
         self.model_id = model_id
 
     def get_story(self, topic: str) -> Dict[str, Any]:
-
         max_length = 2000
 
         user_message = {"role": "user", "content": topic}

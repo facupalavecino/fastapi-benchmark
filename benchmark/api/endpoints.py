@@ -38,7 +38,6 @@ def healthcheck() -> Dict[str, str]:
 
 @router.post("/write-story", response_model=StoryResponse)
 def write_story(model: StorytellerModel, topic: str):
-
     if model == StorytellerModel.BEDROCK_CLAUDE_SONNET:
         llm = ClaudeBedrockLlm(model.value)
     else:
@@ -55,7 +54,6 @@ def write_story(model: StorytellerModel, topic: str):
 
 @router.post("/stream-story")
 def stream_story(model: StorytellerModel, topic: str):
-
     if model == StorytellerModel.BEDROCK_CLAUDE_SONNET:
         llm = ClaudeBedrockLlm(model.value)
     else:

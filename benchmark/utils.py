@@ -55,12 +55,12 @@ ACTIVE_THREADS = Gauge(
 TIME_TO_FULL_RESPONSE = Histogram(
     name="time_to_full_response_seconds",
     documentation="Time to get the full response",
-    labelnames=["provider", "model", "mode"]
+    labelnames=["provider", "model", "mode"],
 )
 TIME_TO_FIRST_BYTE = Histogram(
     name="time_to_first_byte_seconds",
     documentation="Time to first byte for the response",
-    labelnames=["provider", "model", "mode"]
+    labelnames=["provider", "model", "mode"],
 )
 
 
