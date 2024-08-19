@@ -1,3 +1,5 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import time
 import json
 import logging
@@ -10,6 +12,8 @@ from benchmark.utils import TIME_TO_FIRST_BYTE, TIME_TO_FULL_RESPONSE
 
 
 logger = logging.getLogger(__name__)
+
+shared_executor = ThreadPoolExecutor(max_workers=100)  # Adjust max_workers as needed
 
 
 class ClaudeBedrockLlm(BaseLlm):
@@ -132,3 +136,63 @@ class ClaudeBedrockLlm(BaseLlm):
             model=self.model_id,
             mode="streaming",
         ).observe(end_time)
+
+    async def get_story_async(self, topic: str) -> Dict[str, Any]:
+        max_length = 2000
+
+        user_message = {"role": "user", "content": topic}
+
+        messages = [user_message]
+
+        body = json.dumps(
+            {
+                "messages": messages,
+                "system": self.system_prompt,
+                "max_tokens": max_length,
+                "temperature": 0.4,
+                "top_k": 250,
+                "top_p": 1,
+                "anthropic_version": "bedrock-2023-05-31",
+            }
+        )
+
+        logger.debug(f"About to write a story about: {topic}")
+
+        start_time = time.perf_counter_ns() / 1e9
+
+        try:
+            loop = asyncio.get_running_loop()
+            response: Dict[str, Any] = await loop.run_in_executor(
+                shared_executor,
+                lambda: self.client.invoke_model(
+                    modelId=self.model_id,
+                    accept="application/json",
+                    contentType="application/json",
+                    body=body,
+                ),
+            )
+        except Exception as e:
+            logger.exception(e)
+            raise LlmException() from e
+
+        try:
+            response_body = json.loads(response["body"].read())
+        except Exception as e:
+            logger.exception(f"Error reading LLM response {e}")
+            raise LlmException() from e
+
+        end_time = round((time.perf_counter_ns() / 1e9) - start_time, 3)
+        TIME_TO_FIRST_BYTE.labels(
+            provider="bedrock",
+            model=self.model_id,
+            mode="write-async",
+        ).observe(end_time)
+        TIME_TO_FULL_RESPONSE.labels(
+            provider="bedrock",
+            model=self.model_id,
+            mode="write-async",
+        ).observe(end_time)
+
+        story = response_body["content"][0]["text"]
+
+        return {"topic": topic, "story": story}

@@ -38,7 +38,10 @@ def healthcheck() -> Dict[str, str]:
 
 @router.post("/write-story", response_model=StoryResponse)
 def write_story(model: StorytellerModel, topic: str):
-    if model == StorytellerModel.BEDROCK_CLAUDE_SONNET:
+    if model in [
+        StorytellerModel.BEDROCK_CLAUDE_SONNET,
+        StorytellerModel.BEDROCK_CLAUDE_HAIKU,
+    ]:
         llm = ClaudeBedrockLlm(model.value)
     else:
         llm = OpenAILlm(model.value)
@@ -46,6 +49,19 @@ def write_story(model: StorytellerModel, topic: str):
     logger.info(topic)
 
     data = llm.get_story(topic=topic)
+
+    data = StoryResponse.model_validate(data)
+
+    return data
+
+
+@router.post("/write-story-async", response_model=StoryResponse)
+async def write_story_async(model: StorytellerModel, topic: str):
+    llm = ClaudeBedrockLlm(model.value)
+
+    logger.info(topic)
+
+    data = await llm.get_story_async(topic=topic)
 
     data = StoryResponse.model_validate(data)
 

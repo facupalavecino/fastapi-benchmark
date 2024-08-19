@@ -11,3 +11,4 @@ class StorytellerModel(enum.Enum):
     GPT_35_TURBO = "gpt-3.5-turbo"
     GPT_4O_MINI = "gpt-4o-mini"
     BEDROCK_CLAUDE_SONNET = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+    BEDROCK_CLAUDE_HAIKU = "anthropic.claude-3-haiku-20240307-v1:0"
